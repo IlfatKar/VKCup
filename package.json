@@ -1,0 +1,13 @@
+{
+  "name": "vkcup",
+  "browserslist": "> 1%, last 2 versions, not dead",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js -i src/client.js",
+    "build": "rm ./dist -rf && parcel build ./src/index.html --no-cache --no-source-maps && cp ./src/assets ./dist/assets/ -r && uglifyjs ./src/server.js -o ./dist/server.js && cp ./src/db.json ./dist/db.json"
+  },
+  "devDependencies": {
+    "parcel": "^2.8.2",
+    "uglify-js": "^3.17.4"
+  }
+}
