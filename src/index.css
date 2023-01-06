@@ -67,6 +67,12 @@ nav {
   padding-right: 30px;
 }
 
+nav > div:first-of-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 nav.loading::after {
   content: "";
   position: absolute;
@@ -194,7 +200,7 @@ nav .filterBtn .selected_icons > .icon {
 .sidebar {
   width: 100%;
   max-width: 200px;
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -776,6 +782,181 @@ h2 {
 
 .letter .docs:hover {
   background-color: var(--transparentActive);
+}
+
+.settings {
+  position: fixed;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background-color: #fff;
+  z-index: 15;
+  display: flex;
+  padding: 20px;
+  box-shadow: 0 -3px 48px rgba(0, 16, 61, 0.28);
+}
+
+.settings .folder-item {
+  width: 100%;
+}
+
+.settings .colors {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  column-gap: 20px;
+  row-gap: 12px;
+}
+
+.settings .colorTheme {
+  height: 40px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.settings .themes {
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.settings .themes > div {
+  width: 120px;
+  height: 88px;
+  position: relative;
+}
+
+.settings .setings_themes {
+  margin-left: 10px;
+  max-width: 700px;
+  width: 100%;
+}
+
+.settings .setings_themes > p,
+.settings .settingsLang > p {
+  margin-bottom: 26px;
+  color: var(--text-color);
+}
+
+.settings .settings_sidebar {
+  width: 260px;
+  padding-right: 17px;
+  border-right: 1px solid #dadce0;
+  margin-right: 32px;
+}
+
+.settings .settings_sidebar .folder-item {
+  height: 40px;
+}
+
+.settings .settings_sidebar .folder-item.active:hover {
+  background: var(--transparentActive);
+}
+
+.settings .colorTheme {
+  position: relative;
+}
+
+.settings .themes .icon_wrapper,
+.settings .colorTheme .icon_wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 16;
+  background-color: rgba(0, 95, 249, 0.48);
+  opacity: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings .colorTheme.active .icon_wrapper {
+  background-color: rgba(0, 16, 61, 0.12);
+}
+
+.settings .themes .active .icon_wrapper,
+.settings .colorTheme.active .icon_wrapper {
+  opacity: 1;
+}
+
+.settings .settingsLang button {
+  background: #005ff9;
+  color: #fff;
+  padding: 8px 20px;
+  margin-top: 12px;
+}
+
+.settings .settingsLang label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.settings .settingsLang input[type="radio"] {
+  appearance: none;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  width: 16px;
+  height: 16px;
+  border-radius: 1000px;
+  position: relative;
+  outline: none;
+}
+
+.settings .settingsLang input[type="radio"]:checked {
+  background: #005ff9;
+  box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.settings .settingsLang input[type="radio"]:checked::before {
+  content: "";
+  position: absolute;
+  background: #fff;
+  width: 6px;
+  height: 6px;
+  left: calc(50% - 6px / 2);
+  top: calc(50% - 6px / 2);
+  border-radius: 1000px;
+}
+
+.contentWrapper {
+  transition: all 0.2s;
+}
+
+.scalable {
+  transform: scale(0.8);
+}
+
+.settings_wrapper {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  transition: all 0.2s;
+}
+
+.settings_wrapper.hidden {
+  z-index: -1;
+  visibility: hidden;
+}
+
+.settings {
+  height: 50%;
+  transition: all 0.2s;
+}
+
+.settings_wrapper.hidden .settings {
+  height: 0;
+  z-index: -1;
 }
 
 @keyframes spin {

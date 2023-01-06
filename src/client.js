@@ -36,6 +36,11 @@ function tag(tag, ...children) {
     return this;
   };
 
+  el.onChange = function (callback) {
+    el.onchange = callback;
+    return this;
+  };
+
   return el;
 }
 
@@ -54,6 +59,8 @@ const GEN_TAGS = [
   "button",
   "hr",
   "a",
+  "input",
+  "label",
 ];
 
 GEN_TAGS.forEach((item) => {
@@ -67,6 +74,7 @@ const state = {
   sidebarIdx: 0,
   listeners: [],
   filters: [],
+  lang: "Русский",
 };
 
 const sidebarItems = [
@@ -110,6 +118,11 @@ const filters = {
   Непрочитанные: () => mark(),
   "С флажком": () => icon("mark-red.svg"),
   "С вложениями": () => icon("file.svg"),
+};
+
+const langIco = {
+  Русский: "ru.svg",
+  English: "usa.svg",
 };
 
 let setLoading = () => {};
@@ -636,16 +649,142 @@ const Navbar = (onBack, onChangeFolder) => {
   return res;
 };
 
-const Sidebar = (changeTheme, onChangeFolder) => {
-  const themeBtn = folderItem(icon("color_palet.svg"), span("Тема: светлая"))
-    .onClick(() => {
-      if (themeBtn.lastChild.tagName === "SPAN") {
-        themeBtn.lastChild.textContent = `Тема: ${
-          !changeTheme() ? "светлая" : "тёмная"
-        }`;
-      }
-    })
-    .addClass("themeBtn");
+const SettingsTheme = () => {
+  const colors = [
+    "4A352F",
+    "424242",
+    "5A355A",
+    "35385A",
+    "646ECB",
+    "E73672",
+    "F44336",
+    "388E3C",
+    "81D8D0",
+    "E2DCD2",
+    "FFEBCD",
+    "E7EED2",
+    "D0F0F7",
+    "C9D0FB",
+    "DDF3FF",
+    "F0F0F0",
+  ];
+  const res = div(
+    p("Настройки внешнего вида вашей почты и темы оформления"),
+    div(
+      ...colors.map((color) =>
+        div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
+          .attr(["style", `background: #${color}`])
+          .addClass("colorTheme")
+          .addClass("active")
+      )
+    ).addClass("colors"),
+    div(
+      div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper")).attr(
+        [
+          "style",
+          `background: url(../assets/clip.svg) no-repeat center, url(../assets/logo_dark.svg) no-repeat center #000;
+          background-position-x: 24px, 55px;
+          background-size: 24px, 45px;
+          background-position-y: center;`,
+        ]
+      ),
+      div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
+        .attr([
+          "style",
+          `background: url(../assets/clip.svg) no-repeat center, url(../assets/logo.svg) no-repeat center #fff;
+          background-position-x: 24px, 55px;
+          background-size: 24px, 45px;
+          background-position-y: center;`,
+        ])
+        .addClass("active"),
+      div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper")).attr(
+        [
+          "style",
+          "background: url(../assets/anime_preview.jpg) no-repeat; background-size: cover;",
+        ]
+      )
+    ).addClass("themes")
+  ).addClass("setings_themes");
+
+  return res;
+};
+
+const SettingsLang = () => {
+  const radio = (title) =>
+    label(
+      input()
+        .onChange(() => {
+          state.lang = title;
+        })
+        .attr(["type", "radio"])
+        .attr(["name", "lang"])
+        .attr(state.lang === title ? ["checked", ""] : []),
+      icon(langIco[title]),
+      p(title)
+    );
+  const res = div(
+    p("Изменить язык"),
+    div(radio("Русский", "ru.svg"), radio("English", "usa.svg")).addClass(
+      "langs"
+    ),
+    button("Выбрать язык")
+  ).addClass("settingsLang");
+
+  return res;
+};
+
+const Settings = (onClose) => {
+  let tab = 0;
+  let content = tab === 0 ? SettingsTheme() : SettingsLang();
+  const SettingsSidebar = () =>
+    div(
+      folderItem("Внешний вид")
+        .addClass(tab === 0 ? "active" : "")
+        .onClick((e) => {
+          Array.from(e.target.closest(".settings_sidebar").children).forEach(
+            (item) => item.removeClass("active")
+          );
+          e.target.closest(".folder-item").addClass("active");
+          tab = 0;
+          const tabEl = SettingsTheme();
+          content.replaceWith(tabEl);
+          content = tabEl;
+        }),
+      folderItem(span("Язык: "), span("Русский"), icon(langIco[state.lang]))
+        .addClass(tab === 1 ? "active" : "")
+        .onClick((e) => {
+          Array.from(e.target.closest(".settings_sidebar").children).forEach(
+            (item) => item.removeClass("active")
+          );
+          e.target.closest(".folder-item").addClass("active");
+          tab = 1;
+          const tabEl = SettingsLang();
+          content.replaceWith(tabEl);
+          content = tabEl;
+        })
+    ).addClass("settings_sidebar");
+  const res = div(
+    div(SettingsSidebar(), content)
+      .addClass("settings")
+      .onClick((e) => e.stopPropagation())
+  )
+    .addClass("settings_wrapper")
+    .onClick(onClose);
+
+  return res;
+};
+
+const Sidebar = (changeTheme, onChangeFolder, onSettings) => {
+  const settingsBtn = folderItem(icon("settings.svg"), span("Настройки"));
+  // const themeBtn = folderItem(icon("color_palet.svg"), span("Тема: светлая"))
+  //   .onClick(() => {
+  //     if (themeBtn.lastChild.tagName === "SPAN") {
+  //       themeBtn.lastChild.textContent = `Тема: ${
+  //         !changeTheme() ? "светлая" : "тёмная"
+  //       }`;
+  //     }
+  //   })
+  //   .addClass("themeBtn");
 
   const getFolders = () => {
     return sidebarItems.map((item, idx) => {
@@ -685,28 +824,48 @@ const Sidebar = (changeTheme, onChangeFolder) => {
       hr(),
       buttonBorderless(icon("plus.svg").addClass("inverted"), "Новая папка")
     ),
-    themeBtn
+    // themeBtn
+    settingsBtn.onClick(onSettings).addClass("settingsBtn")
   ).addClass("sidebar");
 };
 
 const Layout = (content, goBack, onChangeFolder) => {
+  let isSettings = false;
+
   const navbar = Navbar(() => {
     goBack();
   }, onChangeFolder).setBack(typeof state.messageId === "number");
-  const res = div(
+
+  const contentWrapper = div(
     header(navbar),
     div(
-      Sidebar(() => {
-        res.removeClass(state.isDark ? "darkTheme" : "lightTheme");
-        state.isDark = !state.isDark;
-        res.addClass(state.isDark ? "darkTheme" : "lightTheme");
-        navbar.updateTheme(state.isDark);
-        state.isDarkNotifiers.forEach((item) => item());
-        return state.isDark;
-      }, onChangeFolder),
+      Sidebar(
+        () => {
+          res.removeClass(state.isDark ? "darkTheme" : "lightTheme");
+          state.isDark = !state.isDark;
+          res.addClass(state.isDark ? "darkTheme" : "lightTheme");
+          navbar.updateTheme(state.isDark);
+          state.isDarkNotifiers.forEach((item) => item());
+          return state.isDark;
+        },
+        onChangeFolder,
+        onSettings
+      ),
       content
     ).addClass("content")
-  )
+  ).addClass("contentWrapper");
+
+  function onSettings() {
+    isSettings = !isSettings;
+    contentWrapper.removeClass("scalable");
+    res.lastChild.addClass("hidden");
+    if (isSettings) {
+      contentWrapper.addClass("scalable");
+      res.lastChild.removeClass("hidden");
+    }
+  }
+
+  const res = div(contentWrapper, Settings(onSettings).addClass("hidden"))
     .addClass("layout")
     .addClass(state.isDark ? "darkTheme" : "lightTheme");
 
