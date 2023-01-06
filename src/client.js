@@ -68,10 +68,23 @@ GEN_TAGS.forEach((item) => {
 });
 
 const themes = {
-  light: 1,
-  dark: 2,
-  anime: 3,
-  color: 4,
+  light: {
+    bg: "#00103d1f",
+    navBg: "#fff",
+  },
+  dark: {
+    bg: "#19191a",
+    navBg: "#232324",
+  },
+  anime: {
+    bg: `linear-gradient(
+      180deg,
+      rgba(117, 0, 69, 0.64) 0%,
+      rgba(0, 9, 83, 0.64) 100%
+    ),
+    url("../assets/animeFull.jpg")`,
+    navBg: "#6b1344",
+  },
 };
 
 const state = {
@@ -599,7 +612,7 @@ const filter = (onChangeFolder) => {
     div(
       selectedIcons.addClass("selected_icons"),
       filterText,
-      icon("filter_arrowdown.svg")
+      icon("filter_arrowdown.svg").addClass("inverted")
     )
       .addClass("filterBtn")
       .onClick(() => {
@@ -613,7 +626,7 @@ const filter = (onChangeFolder) => {
 
 const Navbar = (onBack, onChangeFolder) => {
   const image = img(
-    `../assets/${state.theme === themes.dark ? "logo_dark" : "logo"}.svg`
+    `../assets/${state.theme === themes.light ? "logo" : "logo_dark"}.svg`
   );
   const filterEl = filter(onChangeFolder);
   let res = nav(div(icon("clip.svg"), image), filterEl).addClass("nav_gap");
@@ -632,7 +645,7 @@ const Navbar = (onBack, onChangeFolder) => {
     res.updateTheme = function () {
       image.attr([
         "src",
-        `../assets/${state.theme === themes.dark ? "logo_dark" : "logo"}.svg`,
+        `../assets/${state.theme === themes.light ? "logo" : "logo_dark"}.svg`,
       ]);
       return res;
     };
@@ -661,22 +674,22 @@ const Navbar = (onBack, onChangeFolder) => {
 
 const SettingsTheme = (changeTheme) => {
   const colors = [
-    "4A352F",
-    "424242",
-    "5A355A",
-    "35385A",
-    "646ECB",
-    "E73672",
-    "F44336",
-    "388E3C",
-    "81D8D0",
-    "E2DCD2",
-    "FFEBCD",
-    "E7EED2",
-    "D0F0F7",
-    "C9D0FB",
-    "DDF3FF",
-    "F0F0F0",
+    "#4A352F",
+    "#424242",
+    "#5A355A",
+    "#35385A",
+    "#646ECB",
+    "#E73672",
+    "#F44336",
+    "#388E3C",
+    "#81D8D0",
+    "#E2DCD2",
+    "#FFEBCD",
+    "#E7EED2",
+    "#D0F0F7",
+    "#C9D0FB",
+    "#DDF3FF",
+    "#F0F0F0",
   ];
   function setTheme(theme) {
     return () => {
@@ -685,14 +698,17 @@ const SettingsTheme = (changeTheme) => {
       res.children[2].replaceWith(themesEl());
     };
   }
+  colors.forEach((color) => {
+    themes[color] = { bg: color, navBg: `rgba(0,0,0,.23)` };
+  });
   const colorsEl = () =>
     div(
       ...colors.map((color) =>
         div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
-          .attr(["style", `background: #${color}`])
+          .attr(["style", `background: ${color}`])
           .addClass("colorTheme")
           .addClass(state.theme === color ? "active" : "")
-          .onClick(setTheme(color))
+          .onClick(setTheme(themes[color]))
       )
     ).addClass("colors");
 
@@ -858,16 +874,20 @@ const Layout = (content, goBack, onChangeFolder) => {
       ? "darkTheme"
       : state.theme === themes.light
       ? "lightTheme"
-      : "animeTheme";
+      : "customTheme";
 
-  const changeTheme = (theme) => {
+  function changeTheme(theme) {
     res.removeClass(currTheme());
     state.theme = theme;
     res.addClass(currTheme());
+
+    res.style.setProperty("--bg", state.theme.bg);
+    res.style.setProperty("--navBg", state.theme.navBg);
+
     navbar.updateTheme(state.theme);
     state.themeChangeListeners.forEach((item) => item());
     return state.theme;
-  };
+  }
 
   const contentWrapper = div(
     header(navbar),

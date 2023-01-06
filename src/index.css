@@ -26,14 +26,7 @@
   --onBgText: #333;
 }
 
-.animeTheme {
-  --navBg: #6b1344;
-  --bg: linear-gradient(
-      180deg,
-      rgba(117, 0, 69, 0.64) 0%,
-      rgba(0, 9, 83, 0.64) 100%
-    ),
-    url("../assets/animeFull.jpg");
+.customTheme {
   --onBgText: #333;
   --text-color: #fff;
   --invert: 1;
@@ -802,7 +795,7 @@ h2 {
   left: 0;
   right: 0;
   height: 50%;
-  background-color: var(--navBg);
+  background-color: #fff;
   z-index: 15;
   display: flex;
   padding: 20px;
@@ -848,7 +841,7 @@ h2 {
 .settings .setings_themes > p,
 .settings .settingsLang > p {
   margin-bottom: 26px;
-  color: var(--text-color);
+  color: #333;
 }
 
 .settings .settings_sidebar {
@@ -908,7 +901,11 @@ h2 {
   gap: 12px;
   margin-bottom: 20px;
   cursor: pointer;
-  color: var(--text-color);
+  color: #333;
+}
+
+.settings .folder-item {
+  color: #333;
 }
 
 .settings .settingsLang input[type="radio"] {
