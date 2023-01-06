@@ -67,9 +67,16 @@ GEN_TAGS.forEach((item) => {
   window[item] = (...children) => tag(item, ...children);
 });
 
+const themes = {
+  light: 1,
+  dark: 2,
+  anime: 3,
+  color: 4,
+};
+
 const state = {
-  isDark: false,
-  isDarkNotifiers: [],
+  theme: themes.light,
+  themeChangeListeners: [],
   messageId: null,
   sidebarIdx: 0,
   listeners: [],
@@ -349,11 +356,13 @@ const Letters = async (openMessage) => {
   };
   const letters = await fetchLetters();
   const emptyImg = img(
-    `../assets/empty_${state.isDark ? "dark" : "light"}.png`
+    `../assets/empty_${state.theme === themes.dark ? "dark" : "light"}.png`
   );
   const empty = div(emptyImg, p("Писем нет")).addClass("letters_empty");
-  state.isDarkNotifiers.push(() => {
-    emptyImg.src = `../assets/empty_${state.isDark ? "dark" : "light"}.png`;
+  state.themeChangeListeners.push(() => {
+    emptyImg.src = `../assets/empty_${
+      state.theme === themes.dark ? "dark" : "light"
+    }.png`;
   });
   const res = letters.length
     ? div(
@@ -535,7 +544,7 @@ const filterSelect = (change) => {
       .onClick(selectFn("С флажком")),
     div(
       icon("select.svg"),
-      div(icon("file.svg")).addClass("icon_wrapper"),
+      div(icon("file.svg").addClass("inverted")).addClass("icon_wrapper"),
       p("С вложениями")
     )
       .addClass("menu_item")
@@ -563,30 +572,29 @@ const filterSelect = (change) => {
 const filter = (onChangeFolder) => {
   let isOpen = false;
   const selectedIcons = div();
-  const filterText = p(
+  const filterTextFn = () =>
     state.filters.length > 1
       ? "Фильтры"
       : state.filters.length === 1
       ? state.filters[0]
-      : "Фильтр"
-  );
-  const select = filterSelect(() => {
-    filterText.textContent =
-      state.filters.length > 1
-        ? "Фильтры"
-        : state.filters.length === 1
-        ? state.filters[0]
-        : "Фильтр";
+      : "Фильтр";
+  const filterText = p(filterTextFn());
+  const update = () => {
     Array.from(selectedIcons.children).forEach((child) => child.remove());
     state.filters.forEach((item) => {
-      selectedIcons.appendChild(filters[item]());
+      const el = filters[item]();
+      if (item === "С вложениями") {
+        el.addClass("inverted");
+      }
+      selectedIcons.appendChild(el);
     });
+  };
+  const select = filterSelect(() => {
+    filterText.textContent = filterTextFn();
+    update();
     onChangeFolder();
   });
-  Array.from(selectedIcons.children).forEach((child) => child.remove());
-  state.filters.forEach((item) => {
-    selectedIcons.appendChild(filters[item]());
-  });
+  update();
   const res = div(
     div(
       selectedIcons.addClass("selected_icons"),
@@ -604,7 +612,9 @@ const filter = (onChangeFolder) => {
 };
 
 const Navbar = (onBack, onChangeFolder) => {
-  const image = img(`../assets/${state.isDark ? "logo_dark" : "logo"}.svg`);
+  const image = img(
+    `../assets/${state.theme === themes.dark ? "logo_dark" : "logo"}.svg`
+  );
   const filterEl = filter(onChangeFolder);
   let res = nav(div(icon("clip.svg"), image), filterEl).addClass("nav_gap");
 
@@ -622,7 +632,7 @@ const Navbar = (onBack, onChangeFolder) => {
     res.updateTheme = function () {
       image.attr([
         "src",
-        `../assets/${state.isDark ? "logo_dark" : "logo"}.svg`,
+        `../assets/${state.theme === themes.dark ? "logo_dark" : "logo"}.svg`,
       ]);
       return res;
     };
@@ -649,7 +659,7 @@ const Navbar = (onBack, onChangeFolder) => {
   return res;
 };
 
-const SettingsTheme = () => {
+const SettingsTheme = (changeTheme) => {
   const colors = [
     "4A352F",
     "424242",
@@ -668,42 +678,59 @@ const SettingsTheme = () => {
     "DDF3FF",
     "F0F0F0",
   ];
-  const res = div(
-    p("Настройки внешнего вида вашей почты и темы оформления"),
+  function setTheme(theme) {
+    return () => {
+      changeTheme(theme);
+      res.children[1].replaceWith(colorsEl());
+      res.children[2].replaceWith(themesEl());
+    };
+  }
+  const colorsEl = () =>
     div(
       ...colors.map((color) =>
         div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
           .attr(["style", `background: #${color}`])
           .addClass("colorTheme")
-          .addClass("active")
+          .addClass(state.theme === color ? "active" : "")
+          .onClick(setTheme(color))
       )
-    ).addClass("colors"),
+    ).addClass("colors");
+
+  const themesEl = () =>
     div(
-      div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper")).attr(
-        [
+      div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
+        .attr([
           "style",
           `background: url(../assets/clip.svg) no-repeat center, url(../assets/logo_dark.svg) no-repeat center #000;
-          background-position-x: 24px, 55px;
-          background-size: 24px, 45px;
-          background-position-y: center;`,
-        ]
-      ),
+            background-position-x: 24px, 55px;
+            background-size: 24px, 45px;
+            background-position-y: center;`,
+        ])
+        .addClass(state.theme === themes.dark ? "active" : "")
+        .onClick(setTheme(themes.dark)),
       div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
         .attr([
           "style",
           `background: url(../assets/clip.svg) no-repeat center, url(../assets/logo.svg) no-repeat center #fff;
-          background-position-x: 24px, 55px;
-          background-size: 24px, 45px;
-          background-position-y: center;`,
+            background-position-x: 24px, 55px;
+            background-size: 24px, 45px;
+            background-position-y: center;`,
         ])
-        .addClass("active"),
-      div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper")).attr(
-        [
+        .addClass(state.theme === themes.light ? "active" : "")
+        .onClick(setTheme(themes.light)),
+      div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
+        .attr([
           "style",
           "background: url(../assets/anime_preview.jpg) no-repeat; background-size: cover;",
-        ]
-      )
-    ).addClass("themes")
+        ])
+        .addClass(state.theme === themes.anime ? "active" : "")
+        .onClick(setTheme(themes.anime))
+    ).addClass("themes");
+
+  const res = div(
+    p("Настройки внешнего вида вашей почты и темы оформления"),
+    colorsEl(),
+    themesEl()
   ).addClass("setings_themes");
 
   return res;
@@ -733,9 +760,9 @@ const SettingsLang = () => {
   return res;
 };
 
-const Settings = (onClose) => {
+const Settings = (onClose, changeTheme) => {
   let tab = 0;
-  let content = tab === 0 ? SettingsTheme() : SettingsLang();
+  let content = tab === 0 ? SettingsTheme(changeTheme) : SettingsLang();
   const SettingsSidebar = () =>
     div(
       folderItem("Внешний вид")
@@ -746,7 +773,7 @@ const Settings = (onClose) => {
           );
           e.target.closest(".folder-item").addClass("active");
           tab = 0;
-          const tabEl = SettingsTheme();
+          const tabEl = SettingsTheme(changeTheme);
           content.replaceWith(tabEl);
           content = tabEl;
         }),
@@ -774,17 +801,8 @@ const Settings = (onClose) => {
   return res;
 };
 
-const Sidebar = (changeTheme, onChangeFolder, onSettings) => {
+const Sidebar = (onChangeFolder, onSettings) => {
   const settingsBtn = folderItem(icon("settings.svg"), span("Настройки"));
-  // const themeBtn = folderItem(icon("color_palet.svg"), span("Тема: светлая"))
-  //   .onClick(() => {
-  //     if (themeBtn.lastChild.tagName === "SPAN") {
-  //       themeBtn.lastChild.textContent = `Тема: ${
-  //         !changeTheme() ? "светлая" : "тёмная"
-  //       }`;
-  //     }
-  //   })
-  //   .addClass("themeBtn");
 
   const getFolders = () => {
     return sidebarItems.map((item, idx) => {
@@ -824,7 +842,6 @@ const Sidebar = (changeTheme, onChangeFolder, onSettings) => {
       hr(),
       buttonBorderless(icon("plus.svg").addClass("inverted"), "Новая папка")
     ),
-    // themeBtn
     settingsBtn.onClick(onSettings).addClass("settingsBtn")
   ).addClass("sidebar");
 };
@@ -836,23 +853,25 @@ const Layout = (content, goBack, onChangeFolder) => {
     goBack();
   }, onChangeFolder).setBack(typeof state.messageId === "number");
 
+  const currTheme = () =>
+    state.theme === themes.dark
+      ? "darkTheme"
+      : state.theme === themes.light
+      ? "lightTheme"
+      : "animeTheme";
+
+  const changeTheme = (theme) => {
+    res.removeClass(currTheme());
+    state.theme = theme;
+    res.addClass(currTheme());
+    navbar.updateTheme(state.theme);
+    state.themeChangeListeners.forEach((item) => item());
+    return state.theme;
+  };
+
   const contentWrapper = div(
     header(navbar),
-    div(
-      Sidebar(
-        () => {
-          res.removeClass(state.isDark ? "darkTheme" : "lightTheme");
-          state.isDark = !state.isDark;
-          res.addClass(state.isDark ? "darkTheme" : "lightTheme");
-          navbar.updateTheme(state.isDark);
-          state.isDarkNotifiers.forEach((item) => item());
-          return state.isDark;
-        },
-        onChangeFolder,
-        onSettings
-      ),
-      content
-    ).addClass("content")
+    div(Sidebar(onChangeFolder, onSettings), content).addClass("content")
   ).addClass("contentWrapper");
 
   function onSettings() {
@@ -865,9 +884,12 @@ const Layout = (content, goBack, onChangeFolder) => {
     }
   }
 
-  const res = div(contentWrapper, Settings(onSettings).addClass("hidden"))
+  const res = div(
+    contentWrapper,
+    Settings(onSettings, changeTheme).addClass("hidden")
+  )
     .addClass("layout")
-    .addClass(state.isDark ? "darkTheme" : "lightTheme");
+    .addClass(currTheme());
 
   return res;
 };
@@ -875,6 +897,7 @@ const Layout = (content, goBack, onChangeFolder) => {
 const Main = async (app) => {
   const onChangeFolder = async () => {
     setLoading(1);
+    state.messageId = null;
     app.lastChild.lastChild.replaceWith(await lettersNode(messageNode));
     setLoading(2);
     sleep(250).then(() => {
@@ -917,3 +940,4 @@ addEventListener("DOMContentLoaded", async () => {
   const app = document.querySelector("#app");
   app.appendChild(await Main(app));
 });
+// TODO: theme local save

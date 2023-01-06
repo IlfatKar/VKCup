@@ -2,17 +2,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: arial, sans-serif;
 }
 
 .layout {
   height: 100vh;
 }
 
-* {
-  font-family: arial, sans-serif;
-}
-
-.lightTheme {
+:root {
   --navBg: #fff;
   --bg: #00103d1f;
   --selectBg: #fff;
@@ -26,6 +23,20 @@
   --invert: 0;
   --accent: #005ff9;
   --checkbox: rgba(0, 16, 61, 0.12);
+  --onBgText: #333;
+}
+
+.animeTheme {
+  --navBg: #6b1344;
+  --bg: linear-gradient(
+      180deg,
+      rgba(117, 0, 69, 0.64) 0%,
+      rgba(0, 9, 83, 0.64) 100%
+    ),
+    url("../assets/animeFull.jpg");
+  --onBgText: #333;
+  --text-color: #fff;
+  --invert: 1;
 }
 
 .darkTheme {
@@ -42,6 +53,7 @@
   --invert: 1;
   --accent: #005ff9;
   --checkbox: rgba(255, 255, 255, 0.16);
+  --onBgText: #fff;
 }
 
 a {
@@ -122,7 +134,7 @@ nav .filterBtn .icon {
   top: 50px;
   box-shadow: 0 4px 32px 0 rgba(0, 16, 61, 0.16);
   user-select: none;
-  color: var(--text-color);
+  color: var(--onBgText);
 }
 
 .filter_select .menu_item {
@@ -132,7 +144,7 @@ nav .filterBtn .icon {
   flex-direction: row;
   align-items: center;
   gap: 15px;
-  color: var(--text-color);
+  color: var(--onBgText);
   cursor: pointer;
 }
 
@@ -189,7 +201,7 @@ nav .filterBtn .selected_icons > .icon {
   display: flex;
   gap: 15px;
   padding: 0 15px;
-  height: calc(100% - 56px - 12px);
+  height: calc(100vh - 56px - 12px);
 }
 
 .content > * {
@@ -423,7 +435,7 @@ p {
 }
 
 .letter .title {
-  color: var(--text-color);
+  color: var(--onBgText);
 }
 
 .letter .title.text {
@@ -790,7 +802,7 @@ h2 {
   left: 0;
   right: 0;
   height: 50%;
-  background-color: #fff;
+  background-color: var(--navBg);
   z-index: 15;
   display: flex;
   padding: 20px;
@@ -896,6 +908,7 @@ h2 {
   gap: 12px;
   margin-bottom: 20px;
   cursor: pointer;
+  color: var(--text-color);
 }
 
 .settings .settingsLang input[type="radio"] {
