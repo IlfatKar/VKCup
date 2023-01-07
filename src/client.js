@@ -675,7 +675,7 @@ const filter = (onChangeFolder) => {
     state.filters.length > 1
       ? lang("Фильтры")
       : state.filters.length === 1
-      ? state.filters[0]
+      ? lang(state.filters[0])
       : lang("Фильтр");
   const filterText = p(filterTextFn());
   const update = () => {
