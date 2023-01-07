@@ -67,6 +67,54 @@ GEN_TAGS.forEach((item) => {
   window[item] = (...children) => tag(item, ...children);
 });
 
+const lang = (text) => {
+  if (state.lang === "English") {
+    return tranlation[text];
+  }
+  return text;
+};
+
+const tranlation = {
+  Входящие: "Inbox",
+  Настройки: "Settings",
+  "Внешний вид": "Interface",
+  Язык: "Language",
+  "Настройки внешнего вида вашей почты и темы оформления":
+    "Customize the appearance and design theme of your email",
+  "Изменить язык": "Switch Language",
+  "Выбрать язык": "Switch",
+  "Все письма": "All messages",
+  Непрочитанные: "Unread",
+  "С флажком": "Flagged",
+  "С вложениями": "With attachments",
+  "Сбросить все": "Reset",
+  Кому: "To",
+  файл: "file",
+  Скачать: "Download",
+  Важное: "Important",
+  Отправленные: "Sent",
+  Черновики: "Drafts",
+  Архив: "Archive",
+  Спам: "Spam",
+  Корзина: "Trash",
+  "Новая папка": "New folder",
+  "Написать письмо": "Compose",
+  Вернуться: "Return",
+  Фильтр: "Filter",
+  Фильтры: "Filters",
+  Сегодня: "Today",
+  Вы: "You",
+  ещё: "more",
+  получатель: "recipient",
+  получателя: "recipient",
+  получателей: "recipients",
+  "Писем нет": "No letters",
+  Регистрации: "Registrations",
+  Заказы: "Orders",
+  Путешевствия: "Travels",
+  Билеты: "Tickets",
+};
+
 const themes = {
   light: {
     bg: "#00103d1f",
@@ -175,7 +223,7 @@ const state = {
   sidebarIdx: 0,
   listeners: [],
   filters: [],
-  lang: "Русский",
+  lang: localStorage.getItem("lang") || "Русский",
 };
 
 let setLoading = () => {};
@@ -226,7 +274,7 @@ const dateFromNow = (datetime) => {
   ) {
     return p(date.getHours + ":" + date.getMinutes());
   } else {
-    let str = date.toLocaleString("ru", {
+    let str = date.toLocaleString(state.lang === "Русский" ? "ru" : "en", {
       day: "2-digit",
       month: "short",
     });
@@ -409,7 +457,7 @@ const Letters = async (openMessage) => {
       : "empty.svg";
 
   const emptyImg = img(`../assets/${getImg()}`);
-  const empty = div(emptyImg, p("Писем нет")).addClass("letters_empty");
+  const empty = div(emptyImg, p(lang("Писем нет"))).addClass("letters_empty");
   state.themeChangeListeners.push(() => {
     emptyImg.src = `../assets/${getImg()}`;
   });
@@ -471,9 +519,9 @@ const Message = async () => {
     date.getMonth() === now.getMonth() &&
     date.getDate() === now.getDate()
   ) {
-    date_str = "Сегодня, " + date.getHours + ":" + date.getMinutes();
+    date_str = `${lang("Сегодня")}, ` + date.getHours + ":" + date.getMinutes();
   } else {
-    date_str = date.toLocaleString("ru", {
+    date_str = date.toLocaleString(state.lang === "Руссикй" ? "ru" : "en", {
       day: "2-digit",
       month: "long",
     });
@@ -489,7 +537,9 @@ const Message = async () => {
     div(
       h2(message.title),
       message.flag &&
-        div(icon(categories[message.flag]), p(message.flag)).addClass("row")
+        div(icon(categories[message.flag]), p(lang(message.flag))).addClass(
+          "row"
+        )
     ).addClass("message_title"),
     div(
       mark(message.read ? 1 : 2),
@@ -507,15 +557,15 @@ const Message = async () => {
             : icon().size(15).addClass("important")
         ).addClass("row"),
         p(
-          `Кому: Вы, ${recivers} `,
+          `${lang("Кому")}: ${lang("Вы")}, ${recivers} `,
           message.to.length - 3 > 0 &&
             span(
-              `ещё ${message.to.length - 3} ${
+              `${lang("ещё")} ${message.to.length - 3} ${
                 message.to.length === 1
-                  ? "получатель"
+                  ? lang("получатель")
                   : message.to.length < 5
-                  ? "получателя"
-                  : "получателей"
+                  ? lang("получателя")
+                  : lang("получателей")
               }`
             )
         )
@@ -530,9 +580,9 @@ const Message = async () => {
             .attr(["download", "Image.png"])
         ).addClass("file"),
         div(
-          p(`1 файл`),
+          p(`1 ${"файл"}`),
           a(
-            "Скачать",
+            lang("Скачать"),
             span(
               ` (${((message.doc.img.length * 0.75) / 1048576).toFixed(2)}Mb)`
             )
@@ -554,7 +604,7 @@ const filterSelect = (change) => {
     all.removeClass("not_select");
     change();
   };
-  const all = div(icon("select.svg"), p("Все письма"))
+  const all = div(icon("select.svg"), p(lang("Все письма")))
     .addClass("menu_item")
     .addClass(state.filters.length ? "not_select" : "")
     .onClick(clearFilters);
@@ -578,7 +628,7 @@ const filterSelect = (change) => {
     div(
       icon("select.svg"),
       div(mark()).addClass("icon_wrapper"),
-      p("Непрочитанные")
+      p(lang("Непрочитанные"))
     )
       .addClass("menu_item")
       .addClass(!state.filters.includes("Непрочитанные") ? "not_select" : "")
@@ -586,7 +636,7 @@ const filterSelect = (change) => {
     div(
       icon("select.svg"),
       div(icon("mark-red.svg")).addClass("icon_wrapper"),
-      p("С флажком")
+      p(lang("С флажком"))
     )
       .addClass("menu_item")
       .addClass(!state.filters.includes("С флажком") ? "not_select" : "")
@@ -594,7 +644,7 @@ const filterSelect = (change) => {
     div(
       icon("select.svg"),
       div(icon("file.svg").addClass("inverted")).addClass("icon_wrapper"),
-      p("С вложениями")
+      p(lang("С вложениями"))
     )
       .addClass("menu_item")
       .addClass(!state.filters.includes("С вложениями") ? "not_select" : "")
@@ -604,7 +654,7 @@ const filterSelect = (change) => {
     all,
     ...menu_items,
     hr(),
-    div(icon().size(10), p("Сбросить все"))
+    div(icon().size(10), p(lang("Сбросить все")))
       .addClass("menu_item")
       .onClick(clearFilters)
   )
@@ -623,10 +673,10 @@ const filter = (onChangeFolder) => {
   const selectedIcons = div();
   const filterTextFn = () =>
     state.filters.length > 1
-      ? "Фильтры"
+      ? lang("Фильтры")
       : state.filters.length === 1
       ? state.filters[0]
-      : "Фильтр";
+      : lang("Фильтр");
   const filterText = p(filterTextFn());
   const update = () => {
     Array.from(selectedIcons.children).forEach((child) => child.remove());
@@ -694,7 +744,7 @@ const Navbar = (onBack, onChangeFolder) => {
     } else {
       res = nav(
         icon("back.svg").addClass("inverted").addClass("backBtn").size(11),
-        p("Вернуться")
+        p(lang("Вернуться"))
       )
         .addClass("pointer")
         .onClick(() => {
@@ -759,7 +809,7 @@ const SettingsTheme = (changeTheme) => {
     ).addClass("themes");
 
   const res = div(
-    p("Настройки внешнего вида вашей почты и темы оформления"),
+    p(lang("Настройки внешнего вида вашей почты и темы оформления")),
     colorsEl(),
     themesEl()
   ).addClass("setings_themes");
@@ -767,7 +817,7 @@ const SettingsTheme = (changeTheme) => {
   return res;
 };
 
-const SettingsLang = () => {
+const SettingsLang = (changeLang) => {
   const radio = (title) =>
     label(
       input()
@@ -781,22 +831,25 @@ const SettingsLang = () => {
       p(title)
     );
   const res = div(
-    p("Изменить язык"),
+    p(lang("Изменить язык")),
     div(radio("Русский", "ru.svg"), radio("English", "usa.svg")).addClass(
       "langs"
     ),
-    button("Выбрать язык")
+    button(lang("Выбрать язык")).onClick(() => {
+      changeLang();
+    })
   ).addClass("settingsLang");
 
   return res;
 };
 
-const Settings = (onClose, changeTheme) => {
+const Settings = (onClose, changeTheme, changeLang) => {
   let tab = 0;
-  let content = tab === 0 ? SettingsTheme(changeTheme) : SettingsLang();
+  let content =
+    tab === 0 ? SettingsTheme(changeTheme) : SettingsLang(changeLang);
   const SettingsSidebar = () =>
     div(
-      folderItem("Внешний вид")
+      folderItem(lang("Внешний вид"))
         .addClass(tab === 0 ? "active" : "")
         .onClick((e) => {
           Array.from(e.target.closest(".settings_sidebar").children).forEach(
@@ -808,7 +861,11 @@ const Settings = (onClose, changeTheme) => {
           content.replaceWith(tabEl);
           content = tabEl;
         }),
-      folderItem(span("Язык: "), span("Русский"), icon(langIco[state.lang]))
+      folderItem(
+        span(`${lang("Язык")}: `),
+        span(state.lang),
+        icon(langIco[state.lang])
+      )
         .addClass(tab === 1 ? "active" : "")
         .onClick((e) => {
           Array.from(e.target.closest(".settings_sidebar").children).forEach(
@@ -816,7 +873,7 @@ const Settings = (onClose, changeTheme) => {
           );
           e.target.closest(".folder-item").addClass("active");
           tab = 1;
-          const tabEl = SettingsLang();
+          const tabEl = SettingsLang(changeLang);
           content.replaceWith(tabEl);
           content = tabEl;
         })
@@ -833,11 +890,11 @@ const Settings = (onClose, changeTheme) => {
 };
 
 const Sidebar = (onChangeFolder, onSettings) => {
-  const settingsBtn = folderItem(icon("settings.svg"), span("Настройки"));
+  const settingsBtn = folderItem(icon("settings.svg"), span(lang("Настройки")));
 
   const getFolders = () => {
     return sidebarItems.map((item, idx) => {
-      const el = folderItem(icon(item[0]).size(16), span(item[1]));
+      const el = folderItem(icon(item[0]).size(16), span(lang(item[1])));
       if (idx === state.sidebarIdx) {
         el.addClass("active");
       }
@@ -866,12 +923,15 @@ const Sidebar = (onChangeFolder, onSettings) => {
 
   return div(
     div(
-      button(icon("pencil.svg"), span("Написать письмо")).addClass(
+      button(icon("pencil.svg"), span(lang("Написать письмо"))).addClass(
         "writeLetter"
       ),
       foldersWrapper,
       hr(),
-      buttonBorderless(icon("plus.svg").addClass("inverted"), "Новая папка")
+      buttonBorderless(
+        icon("plus.svg").addClass("inverted"),
+        lang("Новая папка")
+      )
     ),
     settingsBtn.onClick(onSettings).addClass("settingsBtn")
   ).addClass("sidebar");
@@ -890,6 +950,11 @@ const Layout = (content, goBack, onChangeFolder) => {
       : state.theme === themes.light
       ? "lightTheme"
       : "customTheme";
+
+  function changeLang() {
+    localStorage.setItem("lang", state.lang);
+    onChangeFolder();
+  }
 
   function changeTheme(theme) {
     res.removeClass(currTheme());
@@ -930,13 +995,15 @@ const Layout = (content, goBack, onChangeFolder) => {
       res.lastChild.removeClass("hidden");
     }
   }
+  const getEl = () =>
+    div(
+      contentWrapper,
+      Settings(onSettings, changeTheme, changeLang).addClass("hidden")
+    )
+      .addClass("layout")
+      .addClass(currTheme());
 
-  const res = div(
-    contentWrapper,
-    Settings(onSettings, changeTheme).addClass("hidden")
-  )
-    .addClass("layout")
-    .addClass(currTheme());
+  const res = getEl();
 
   changeTheme(state.theme);
 
