@@ -28,8 +28,11 @@
 
 .customTheme {
   --onBgText: #333;
-  --text-color: #fff;
-  --invert: 1;
+  /* --invert: 1; */
+}
+
+.customTheme .letter .docs .inverted {
+  filter: invert(0);
 }
 
 .darkTheme {

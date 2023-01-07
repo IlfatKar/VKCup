@@ -71,10 +71,13 @@ const themes = {
   light: {
     bg: "#00103d1f",
     navBg: "#fff",
+    textColor: "#333",
+    invert: 0,
   },
   dark: {
     bg: "#19191a",
     navBg: "#232324",
+    invert: 1,
   },
   anime: {
     bg: `linear-gradient(
@@ -84,6 +87,8 @@ const themes = {
     ),
     url("../assets/animeFull.jpg")`,
     navBg: "#6b1344",
+    textColor: "#fff",
+    invert: 1,
   },
 };
 
@@ -368,14 +373,17 @@ const Letters = async (openMessage) => {
     );
   };
   const letters = await fetchLetters();
-  const emptyImg = img(
-    `../assets/empty_${state.theme === themes.dark ? "dark" : "light"}.png`
-  );
+  const getImg = () =>
+    state.theme === themes.dark
+      ? "empty_dark.png"
+      : state.theme === themes.light
+      ? "empty_light.png"
+      : "empty.svg";
+
+  const emptyImg = img(`../assets/${getImg()}`);
   const empty = div(emptyImg, p("Писем нет")).addClass("letters_empty");
   state.themeChangeListeners.push(() => {
-    emptyImg.src = `../assets/empty_${
-      state.theme === themes.dark ? "dark" : "light"
-    }.png`;
+    emptyImg.src = `../assets/${getImg()}`;
   });
   const res = letters.length
     ? div(
@@ -674,22 +682,22 @@ const Navbar = (onBack, onChangeFolder) => {
 
 const SettingsTheme = (changeTheme) => {
   const colors = [
-    "#4A352F",
-    "#424242",
-    "#5A355A",
-    "#35385A",
-    "#646ECB",
-    "#E73672",
-    "#F44336",
-    "#388E3C",
-    "#81D8D0",
-    "#E2DCD2",
-    "#FFEBCD",
-    "#E7EED2",
-    "#D0F0F7",
-    "#C9D0FB",
-    "#DDF3FF",
-    "#F0F0F0",
+    ["#4A352F", "#fff"],
+    ["#424242", "#fff"],
+    ["#5A355A", "#fff"],
+    ["#35385A", "#fff"],
+    ["#646ECB", "#fff"],
+    ["#E73672", "#fff"],
+    ["#F44336", "#fff"],
+    ["#388E3C", "#fff"],
+    ["#81D8D0", "#333"],
+    ["#E2DCD2", "#333"],
+    ["#FFEBCD", "#333"],
+    ["#E7EED2", "#333"],
+    ["#D0F0F7", "#333"],
+    ["#C9D0FB", "#333"],
+    ["#DDF3FF", "#333"],
+    ["#F0F0F0", "#333"],
   ];
   function setTheme(theme) {
     return () => {
@@ -698,16 +706,21 @@ const SettingsTheme = (changeTheme) => {
       res.children[2].replaceWith(themesEl());
     };
   }
-  colors.forEach((color) => {
-    themes[color] = { bg: color, navBg: `rgba(0,0,0,.23)` };
+  colors.forEach(([color, text]) => {
+    themes[color] = {
+      bg: color,
+      navBg: `rgba(0,0,0,.23)`,
+      textColor: text,
+      invert: text === "#fff" ? "1" : "0",
+    };
   });
   const colorsEl = () =>
     div(
-      ...colors.map((color) =>
+      ...colors.map(([color, ..._]) =>
         div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
           .attr(["style", `background: ${color}`])
           .addClass("colorTheme")
-          .addClass(state.theme === color ? "active" : "")
+          .addClass(state.theme.bg === color ? "active" : "")
           .onClick(setTheme(themes[color]))
       )
     ).addClass("colors");
@@ -881,8 +894,15 @@ const Layout = (content, goBack, onChangeFolder) => {
     state.theme = theme;
     res.addClass(currTheme());
 
-    res.style.setProperty("--bg", state.theme.bg);
-    res.style.setProperty("--navBg", state.theme.navBg);
+    const el = document.querySelector(":root");
+    el.style.setProperty("--bg", state.theme.bg);
+    el.style.setProperty("--navBg", state.theme.navBg);
+    if (state.theme.textColor) {
+      el.style.setProperty("--text-color", state.theme.textColor);
+    }
+    if (state.theme.invert !== undefined) {
+      el.style.setProperty("--invert", state.theme.invert);
+    }
 
     navbar.updateTheme(state.theme);
     state.themeChangeListeners.forEach((item) => item());
