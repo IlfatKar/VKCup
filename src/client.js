@@ -92,16 +92,6 @@ const themes = {
   },
 };
 
-const state = {
-  theme: themes.light,
-  themeChangeListeners: [],
-  messageId: null,
-  sidebarIdx: 0,
-  listeners: [],
-  filters: [],
-  lang: "Русский",
-};
-
 const sidebarItems = [
   ["mail.svg", "Входящие"],
   ["folder.svg", "Важное"],
@@ -129,6 +119,33 @@ const colors = [
   "coral",
 ];
 
+const themeColors = [
+  ["#4A352F", "#fff"],
+  ["#424242", "#fff"],
+  ["#5A355A", "#fff"],
+  ["#35385A", "#fff"],
+  ["#646ECB", "#fff"],
+  ["#E73672", "#fff"],
+  ["#F44336", "#fff"],
+  ["#388E3C", "#fff"],
+  ["#81D8D0", "#333"],
+  ["#E2DCD2", "#333"],
+  ["#FFEBCD", "#333"],
+  ["#E7EED2", "#333"],
+  ["#D0F0F7", "#333"],
+  ["#C9D0FB", "#333"],
+  ["#DDF3FF", "#333"],
+  ["#F0F0F0", "#333"],
+];
+themeColors.forEach(([color, text]) => {
+  themes[color] = {
+    bg: color,
+    navBg: `rgba(0,0,0,.23)`,
+    textColor: text,
+    invert: text === "#fff" ? "1" : "0",
+  };
+});
+
 const categories = {
   Входящие: "order.svg",
   Финансы: "rub.svg",
@@ -148,6 +165,17 @@ const filters = {
 const langIco = {
   Русский: "ru.svg",
   English: "usa.svg",
+};
+
+const t = localStorage.getItem("theme") || "light";
+const state = {
+  theme: themes[t] || themes.light,
+  themeChangeListeners: [],
+  messageId: null,
+  sidebarIdx: 0,
+  listeners: [],
+  filters: [],
+  lang: "Русский",
 };
 
 let setLoading = () => {};
@@ -681,24 +709,6 @@ const Navbar = (onBack, onChangeFolder) => {
 };
 
 const SettingsTheme = (changeTheme) => {
-  const colors = [
-    ["#4A352F", "#fff"],
-    ["#424242", "#fff"],
-    ["#5A355A", "#fff"],
-    ["#35385A", "#fff"],
-    ["#646ECB", "#fff"],
-    ["#E73672", "#fff"],
-    ["#F44336", "#fff"],
-    ["#388E3C", "#fff"],
-    ["#81D8D0", "#333"],
-    ["#E2DCD2", "#333"],
-    ["#FFEBCD", "#333"],
-    ["#E7EED2", "#333"],
-    ["#D0F0F7", "#333"],
-    ["#C9D0FB", "#333"],
-    ["#DDF3FF", "#333"],
-    ["#F0F0F0", "#333"],
-  ];
   function setTheme(theme) {
     return () => {
       changeTheme(theme);
@@ -706,17 +716,9 @@ const SettingsTheme = (changeTheme) => {
       res.children[2].replaceWith(themesEl());
     };
   }
-  colors.forEach(([color, text]) => {
-    themes[color] = {
-      bg: color,
-      navBg: `rgba(0,0,0,.23)`,
-      textColor: text,
-      invert: text === "#fff" ? "1" : "0",
-    };
-  });
   const colorsEl = () =>
     div(
-      ...colors.map(([color, ..._]) =>
+      ...themeColors.map(([color, ..._]) =>
         div(div(icon("select_white.svg").size(24)).addClass("icon_wrapper"))
           .attr(["style", `background: ${color}`])
           .addClass("colorTheme")
@@ -892,6 +894,11 @@ const Layout = (content, goBack, onChangeFolder) => {
   function changeTheme(theme) {
     res.removeClass(currTheme());
     state.theme = theme;
+
+    localStorage.setItem(
+      "theme",
+      Object.keys(themes).find((key) => themes[key] === theme)
+    );
     res.addClass(currTheme());
 
     const el = document.querySelector(":root");
@@ -930,6 +937,8 @@ const Layout = (content, goBack, onChangeFolder) => {
   )
     .addClass("layout")
     .addClass(currTheme());
+
+  changeTheme(state.theme);
 
   return res;
 };
@@ -980,4 +989,3 @@ addEventListener("DOMContentLoaded", async () => {
   const app = document.querySelector("#app");
   app.appendChild(await Main(app));
 });
-// TODO: theme local save
